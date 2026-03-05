@@ -13,18 +13,20 @@ final class AppRuntime {
     private let coordinator: AptuneCoordinator
     private let engine: VADEngine
     private let logger: Logger
+    private let startupMessage: String
 
-    init(coordinator: AptuneCoordinator, engine: VADEngine, logger: Logger) {
+    init(coordinator: AptuneCoordinator, engine: VADEngine, logger: Logger, startupMessage: String) {
         self.coordinator = coordinator
         self.engine = engine
         self.logger = logger
+        self.startupMessage = startupMessage
     }
 
     func run() throws {
         try engine.start { [weak self] state in
             self?.coordinator.handleSpeechState(state)
         }
-        logger.info("Aptune started. Press Ctrl+C to stop.")
+        logger.info(startupMessage)
         RunLoop.main.run()
     }
 
@@ -41,7 +43,7 @@ func buildEngine(config: AptuneConfig) -> VADEngine {
     case .native:
         return NativeSoundAnalysisEngine(speechThreshold: Float(config.speechThreshold), holdMs: config.holdMs)
     case .silero:
-        return SileroEngine()
+        return SileroEngine(speechThreshold: Float(config.speechThreshold), holdMs: config.holdMs)
     }
 }
 
@@ -63,20 +65,31 @@ func installSignalHandlers(_ runtime: AppRuntime) {
 
 func main() -> Int32 {
     do {
-        let config = try CLIParser.parse(arguments: Array(CommandLine.arguments.dropFirst()))
-        let logger = Logger(level: config.logLevel)
+        let command = try CLIParser.parse(arguments: Array(CommandLine.arguments.dropFirst()))
 
-        try MicrophonePermissionChecker.ensureMicrophoneAccess()
+        switch command {
+        case .showHelp:
+            print(CLIParser.usage)
+            return 0
+        case .showVersion:
+            print(AptuneVersion.summary)
+            return 0
+        case .run(let config):
+            let logger = Logger(level: config.logLevel)
 
-        let volumeController = AppleScriptVolumeController()
-        let volumeDucker = VolumeDucker(controller: volumeController)
-        let coordinator = AptuneCoordinator(config: config, volumeDucker: volumeDucker, logger: logger)
-        let engine = buildEngine(config: config)
-        let runtime = AppRuntime(coordinator: coordinator, engine: engine, logger: logger)
+            try MicrophonePermissionChecker.ensureMicrophoneAccess()
 
-        installSignalHandlers(runtime)
-        try runtime.run()
-        return 0
+            let volumeController = AppleScriptVolumeController()
+            let volumeDucker = VolumeDucker(controller: volumeController)
+            let coordinator = AptuneCoordinator(config: config, volumeDucker: volumeDucker, logger: logger)
+            let engine = buildEngine(config: config)
+            let startupMessage = "Aptune \(AptuneVersion.current) started with \(config.engine.rawValue) backend (\(config.engine.profileVersion)). Press Ctrl+C to stop."
+            let runtime = AppRuntime(coordinator: coordinator, engine: engine, logger: logger, startupMessage: startupMessage)
+
+            installSignalHandlers(runtime)
+            try runtime.run()
+            return 0
+        }
     } catch {
         fputs("aptune: \(error)\n", stderr)
         return 1

@@ -3,7 +3,10 @@ import XCTest
 
 final class CLIParserTests: XCTestCase {
     func testParsesDefaultValues() throws {
-        let config = try CLIParser.parse(arguments: [])
+        let command = try CLIParser.parse(arguments: [])
+        guard case .run(let config) = command else {
+            return XCTFail("Expected run command")
+        }
         XCTAssertEqual(config.downTo, 0.25)
         XCTAssertEqual(config.engine, .native)
         XCTAssertEqual(config.attackMs, 80)
@@ -24,7 +27,10 @@ final class CLIParserTests: XCTestCase {
             "--speech-threshold", "0.7"
         ]
 
-        let config = try CLIParser.parse(arguments: args)
+        let command = try CLIParser.parse(arguments: args)
+        guard case .run(let config) = command else {
+            return XCTFail("Expected run command")
+        }
         XCTAssertEqual(config.downTo, 0.4)
         XCTAssertEqual(config.engine, .silero)
         XCTAssertEqual(config.attackMs, 100)
@@ -40,5 +46,22 @@ final class CLIParserTests: XCTestCase {
 
     func testRejectsUnknownFlag() {
         XCTAssertThrowsError(try CLIParser.parse(arguments: ["--bad", "1"]))
+    }
+
+    func testShowsVersionForLongAndShortFlags() throws {
+        XCTAssertEqual(try CLIParser.parse(arguments: ["--version"]), .showVersion)
+        XCTAssertEqual(try CLIParser.parse(arguments: ["-v"]), .showVersion)
+        XCTAssertEqual(try CLIParser.parse(arguments: ["version"]), .showVersion)
+    }
+
+    func testShowsHelpForLongAndShortFlags() throws {
+        XCTAssertEqual(try CLIParser.parse(arguments: ["--help"]), .showHelp)
+        XCTAssertEqual(try CLIParser.parse(arguments: ["-h"]), .showHelp)
+        XCTAssertEqual(try CLIParser.parse(arguments: ["help"]), .showHelp)
+    }
+
+    func testMapsEnginesToCliProfiles() {
+        XCTAssertEqual(EngineChoice.native.profileVersion, AptuneVersion.nativeProfile)
+        XCTAssertEqual(EngineChoice.silero.profileVersion, AptuneVersion.sileroProfile)
     }
 }

@@ -3,6 +3,15 @@ import Foundation
 public enum EngineChoice: String, CaseIterable {
     case native
     case silero
+
+    public var profileVersion: String {
+        switch self {
+        case .native:
+            return AptuneVersion.nativeProfile
+        case .silero:
+            return AptuneVersion.sileroProfile
+        }
+    }
 }
 
 public enum LogLevel: String, CaseIterable {
@@ -52,4 +61,13 @@ public struct AptuneConfig: Equatable {
         self.logLevel = logLevel
         self.speechThreshold = speechThreshold
     }
+}
+
+public enum AptuneVersion {
+    public static let current = "v0.2.0"
+    public static let previous = "v0.1.0"
+    public static let nativeProfile = "v0.1"
+    public static let sileroProfile = "v0.2"
+
+    public static let summary = "aptune \(current) (profiles: \(nativeProfile)=native, \(sileroProfile)=silero; previous tag: \(previous))"
 }
