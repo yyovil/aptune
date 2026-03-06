@@ -18,14 +18,35 @@ public enum CLIError: Error, CustomStringConvertible, Equatable {
 }
 
 public enum CLIParser {
-    public static func parse(arguments: [String]) throws -> AptuneConfig {
+    public static let usage = """
+    Usage: aptune [options]
+
+    Options:
+      --downTo <0...1>           Target volume multiplier while speaking (default: 0.25)
+      --attack-ms <int>          Duck ramp duration in milliseconds (default: 80)
+      --release-ms <int>         Restore ramp duration in milliseconds (default: 600)
+      --hold-ms <int>            Silence hold before restore in milliseconds (default: 250)
+      --log-level info|debug     Log verbosity (default: info)
+      --speech-threshold <0...1> Speech confidence threshold (default: 0.7)
+      -h, --help, help           Show this help
+      -v, --version, version     Show CLI version and supported profiles
+    """
+
+    public static func parse(arguments: [String]) throws -> CLICommand {
+        if arguments.contains("--help") || arguments.contains("-h") || arguments.contains("help") {
+            return .showHelp
+        }
+
+        if arguments.contains("--version") || arguments.contains("-v") || arguments.contains("version") {
+            return .showVersion
+        }
+
         var downTo = 0.25
-        var engine = EngineChoice.native
         var attackMs = 80
         var releaseMs = 600
         var holdMs = 250
         var logLevel = LogLevel.info
-        var speechThreshold = 0.55
+        var speechThreshold = 0.7
 
         var index = 0
         while index < arguments.count {
@@ -33,12 +54,6 @@ public enum CLIParser {
             switch arg {
             case "--downTo":
                 downTo = try parseDoubleValue(arguments: arguments, index: &index, flag: arg)
-            case "--engine":
-                let value = try parseStringValue(arguments: arguments, index: &index, flag: arg)
-                guard let parsed = EngineChoice(rawValue: value) else {
-                    throw CLIError.invalidValue(flag: arg, message: "expected one of: \(EngineChoice.allCases.map(\.rawValue).joined(separator: ", "))")
-                }
-                engine = parsed
             case "--attack-ms":
                 attackMs = try parseIntValue(arguments: arguments, index: &index, flag: arg)
             case "--release-ms":
@@ -59,15 +74,14 @@ public enum CLIParser {
             index += 1
         }
 
-        return try AptuneConfig(
+        return .run(try AptuneConfig(
             downTo: downTo,
-            engine: engine,
             attackMs: attackMs,
             releaseMs: releaseMs,
             holdMs: holdMs,
             logLevel: logLevel,
             speechThreshold: speechThreshold
-        )
+        ))
     }
 
     private static func parseStringValue(arguments: [String], index: inout Int, flag: String) throws -> String {
