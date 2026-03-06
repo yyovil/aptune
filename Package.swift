@@ -16,7 +16,12 @@ let package = Package(
         ),
         .target(name: "CLI"),
         .target(name: "AudioCapture"),
-        .target(name: "VAD", dependencies: ["AudioCapture"]),
+        .target(
+            name: "VAD",
+            resources: [
+                .copy("Resources/FireRedVAD.mlpackage")
+            ]
+        ),
         .target(name: "VolumeControl"),
         .target(name: "Coordinator", dependencies: ["CLI", "VAD", "VolumeControl"]),
         .testTarget(name: "CLITests", dependencies: ["CLI"]),
