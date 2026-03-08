@@ -1,32 +1,16 @@
 # Aptune
 
-Aptune is a macOS Swift CLI that ducks system output volume while you speak.
+Aptune is a cli tool for MacOS that ducks system volume while you speak.
 
-## Versioning
+[![Watch the demo](https://img.youtube.com/vi/bI2UbxcefwM/maxresdefault.jpg)](https://youtu.be/bI2UbxcefwM)
 
-Aptune uses canonical SwiftPM versioning via Git tags (SemVer). The current codebase is a FireRedVAD-only `v0.2.0` build.
+## Features
 
-## Build
+- On speech onset, volume ramps down to `current * downTo`.
+- After silence hold, volume ramps back to the pre-duck baseline.
+- On exit (`Ctrl+C`), Aptune restores baseline volume.
 
-```bash
-swift build
-```
-
-Aptune uses a bundled FireRedVAD Core ML package. There is no Python runtime, no external model download, and no extra setup required at runtime.
-
-## Run
-
-```bash
-swift run aptune --downTo 0.25
-```
-
-```bash
-swift run aptune --version
-```
-
-On first run, macOS will ask for microphone permission.
-
-## Options
+## Usage
 
 - `--downTo <0...1>` (default `0.25`)
 - `--attack-ms <int>` (default `80`)
@@ -37,9 +21,27 @@ On first run, macOS will ask for microphone permission.
 - `-h`, `--help`, `help`
 - `-v`, `--version`, `version`
 
-## Behavior
+## Install
 
-- Uses the FireRedVAD Core ML model with native feature extraction and the `fr-v0.2` CLI profile.
-- On speech onset, volume ramps down to `current * downTo`.
-- After silence hold, volume ramps back to the pre-duck baseline.
-- On exit (`Ctrl+C`), Aptune restores baseline volume.
+### Nix flake
+
+```bash
+nix profile install github:yyovil/aptune#aptune
+```
+
+You can also run it without installing:
+
+```bash
+nix run github:yyovil/aptune#aptune -- --version
+```
+
+This flake is macOS-only because Aptune depends on Apple audio, Core ML, and AppleScript APIs.
+
+### Homebrew tap
+
+Install Aptune from the tap:
+
+```bash
+brew tap yyovil/aptune https://github.com/yyovil/aptune
+brew install aptune
+```
