@@ -3,11 +3,16 @@ import CLI
 import Coordinator
 import Dispatch
 import Foundation
+import RuntimeSupport
 import VAD
 import VolumeControl
 import Darwin
 
 private var signalSources: [DispatchSourceSignal] = []
+
+private func printBanner() {
+    print(AptuneBanner.text)
+}
 
 final class AppRuntime {
     private let coordinator: AptuneCoordinator
@@ -60,12 +65,14 @@ func main() -> Int32 {
 
         switch command {
         case .showHelp:
+            printBanner()
             print(CLIParser.usage)
             return 0
         case .showVersion:
             print(AptuneVersion.summary)
             return 0
         case .run(let config):
+            printBanner()
             let logger = Logger(level: config.logLevel)
 
             try MicrophonePermissionChecker.ensureMicrophoneAccess()
@@ -82,7 +89,7 @@ func main() -> Int32 {
             return 0
         }
     } catch {
-        fputs("aptune: \(error)\n", stderr)
+        ConsoleOutput.writeStderrLine("aptune: \(error)")
         return 1
     }
 }

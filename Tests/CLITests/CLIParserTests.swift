@@ -2,6 +2,16 @@ import CLI
 import XCTest
 
 final class CLIParserTests: XCTestCase {
+    func testVersionSummaryOnlyShowsCurrentVersion() {
+        XCTAssertEqual(AptuneVersion.summary, "aptune \(AptuneVersion.current)")
+    }
+
+    func testUsageIncludesDescription() {
+        XCTAssertTrue(
+            CLIParser.usage.contains("Aptune is a cli tool for MacOS that ducks system volume while you speak.")
+        )
+    }
+
     func testParsesDefaultValues() throws {
         let command = try CLIParser.parse(arguments: [])
         guard case .run(let config) = command else {
