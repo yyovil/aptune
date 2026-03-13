@@ -1,7 +1,12 @@
 .build
+.build-release/
+.build-tests/
 .cache/
 .direnv/
 .env
+result
 .swiftpm/
 dist/
 .vscode/
+.content
+.DS_Store

@@ -21,6 +21,8 @@ public enum CLIParser {
     public static let usage = """
     Usage: aptune [options]
 
+    Aptune is a cli tool for MacOS that ducks system volume while you speak.
+
     Options:
       --downTo <0...1>           Target volume multiplier while speaking (default: 0.25)
       --attack-ms <int>          Duck ramp duration in milliseconds (default: 80)
@@ -29,7 +31,7 @@ public enum CLIParser {
       --log-level info|debug     Log verbosity (default: info)
       --speech-threshold <0...1> Speech confidence threshold (default: 0.7)
       -h, --help, help           Show this help
-      -v, --version, version     Show CLI version and supported profiles
+      -v, --version, version     Show CLI version
     """
 
     public static func parse(arguments: [String]) throws -> CLICommand {

@@ -1,4 +1,5 @@
 import Foundation
+import RuntimeSupport
 
 public final class Logger {
     private let level: LogLevel
@@ -19,8 +20,7 @@ public final class Logger {
 
     private func log(prefix: String, message: String) {
         queue.async {
-            fputs("[\(prefix)] \(message)\n", stdout)
-            fflush(stdout)
+            ConsoleOutput.writeStdoutLine("[\(prefix)] \(message)")
         }
     }
 }

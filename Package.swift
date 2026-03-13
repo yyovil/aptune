@@ -14,15 +14,17 @@ let package = Package(
             name: "Aptune",
             dependencies: ["CLI", "AudioCapture", "VAD", "VolumeControl", "Coordinator"]
         ),
-        .target(name: "CLI"),
+        .target(name: "RuntimeSupport"),
+        .target(name: "CLI", dependencies: ["RuntimeSupport"]),
         .target(name: "AudioCapture"),
         .target(
             name: "VAD",
+            dependencies: ["RuntimeSupport"],
             resources: [
                 .copy("Resources/FireRedVAD.mlpackage")
             ]
         ),
-        .target(name: "VolumeControl"),
+        .target(name: "VolumeControl", dependencies: ["RuntimeSupport"]),
         .target(name: "Coordinator", dependencies: ["CLI", "VAD", "VolumeControl"]),
         .testTarget(name: "CLITests", dependencies: ["CLI"]),
         .testTarget(name: "VADTests", dependencies: ["VAD"]),
