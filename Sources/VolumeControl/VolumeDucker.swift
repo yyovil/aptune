@@ -1,4 +1,5 @@
 import Foundation
+import RuntimeSupport
 
 public protocol VolumeDucking {
     func duck(to downTo: Double, attackMs: Int)
@@ -27,7 +28,7 @@ public final class VolumeDucker: VolumeDucking {
                 let from = try self.controller.getCurrentVolume()
                 self.startRamp(from: from, to: target, durationMs: attackMs)
             } catch {
-                fputs("[ERROR] Failed to duck volume: \(error)\n", stderr)
+                ConsoleOutput.writeStderrLine("[ERROR] Failed to duck volume: \(error)")
             }
         }
     }
@@ -40,7 +41,7 @@ public final class VolumeDucker: VolumeDucking {
                 self.startRamp(from: from, to: baseline, durationMs: releaseMs)
                 self.baselineVolume = nil
             } catch {
-                fputs("[ERROR] Failed to restore volume: \(error)\n", stderr)
+                ConsoleOutput.writeStderrLine("[ERROR] Failed to restore volume: \(error)")
             }
         }
     }
@@ -55,7 +56,7 @@ public final class VolumeDucker: VolumeDucking {
                 try self.controller.setVolume(baseline)
                 self.baselineVolume = nil
             } catch {
-                fputs("[ERROR] Failed to restore volume on shutdown: \(error)\n", stderr)
+                ConsoleOutput.writeStderrLine("[ERROR] Failed to restore volume on shutdown: \(error)")
             }
         }
         semaphore.wait()
@@ -71,7 +72,7 @@ public final class VolumeDucker: VolumeDucking {
             do {
                 try controller.setVolume(value)
             } catch {
-                fputs("[ERROR] Failed setting volume during ramp: \(error)\n", stderr)
+                ConsoleOutput.writeStderrLine("[ERROR] Failed setting volume during ramp: \(error)")
                 return
             }
             if durationMs > 0 {

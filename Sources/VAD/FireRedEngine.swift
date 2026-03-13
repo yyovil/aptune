@@ -4,6 +4,7 @@ import Foundation
 import Accelerate
 import AVFoundation
 import CoreML
+import RuntimeSupport
 
 public final class FireRedEngine: VADEngine {
     private let smoother: SpeechStateSmoother
@@ -81,7 +82,7 @@ public final class FireRedEngine: VADEngine {
                 handle(probability: probability, rawSpeaking: gateResult.rawSpeaking)
             }
         } catch {
-            fputs("[ERROR] FireRedVAD processing failed: \(error)\n", stderr)
+            ConsoleOutput.writeStderrLine("[ERROR] FireRedVAD processing failed: \(error)")
         }
     }
 
@@ -101,7 +102,7 @@ public final class FireRedEngine: VADEngine {
         debugFrameCount += 1
         if debugFrameCount % 25 == 0 {
             let ambient = gateResult.ambientLevelDb ?? .nan
-            fputs("[DEBUG] FireRed frame=\(debugFrameCount) probability=\(probability) levelDb=\(levelDb) ambientDb=\(ambient) deltaDb=\(gateResult.deltaDb) calibrationFrames=\(gateResult.remainingCalibrationFrames) candidateActive=\(gateResult.candidateActive) rawSpeaking=\(gateResult.rawSpeaking)\n", stderr)
+            ConsoleOutput.writeStderrLine("[DEBUG] FireRed frame=\(debugFrameCount) probability=\(probability) levelDb=\(levelDb) ambientDb=\(ambient) deltaDb=\(gateResult.deltaDb) calibrationFrames=\(gateResult.remainingCalibrationFrames) candidateActive=\(gateResult.candidateActive) rawSpeaking=\(gateResult.rawSpeaking)")
         }
     }
 }
