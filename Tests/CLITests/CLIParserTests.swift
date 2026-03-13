@@ -27,7 +27,7 @@ final class CLIParserTests: XCTestCase {
 
     func testParsesAllFlags() throws {
         let args = [
-            "--downTo", "0.4",
+            "--down-to", "0.4",
             "--attack-ms", "100",
             "--release-ms", "700",
             "--hold-ms", "300",
@@ -49,7 +49,11 @@ final class CLIParserTests: XCTestCase {
     }
 
     func testRejectsOutOfRangeDownTo() {
-        XCTAssertThrowsError(try CLIParser.parse(arguments: ["--downTo", "1.1"]))
+        XCTAssertThrowsError(try CLIParser.parse(arguments: ["--down-to", "1.1"]))
+    }
+
+    func testRejectsLegacyDownToFlag() {
+        XCTAssertThrowsError(try CLIParser.parse(arguments: ["--downTo", "0.4"]))
     }
 
     func testRejectsUnknownFlag() {

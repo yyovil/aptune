@@ -24,7 +24,7 @@ public enum CLIParser {
     Aptune is a cli tool for MacOS that ducks system volume while you speak.
 
     Options:
-      --downTo <0...1>           Target volume multiplier while speaking (default: 0.25)
+      --down-to <0...1>          Target volume multiplier while speaking (default: 0.25)
       --attack-ms <int>          Duck ramp duration in milliseconds (default: 80)
       --release-ms <int>         Restore ramp duration in milliseconds (default: 600)
       --hold-ms <int>            Silence hold before restore in milliseconds (default: 250)
@@ -54,7 +54,7 @@ public enum CLIParser {
         while index < arguments.count {
             let arg = arguments[index]
             switch arg {
-            case "--downTo":
+            case "--down-to":
                 downTo = try parseDoubleValue(arguments: arguments, index: &index, flag: arg)
             case "--attack-ms":
                 attackMs = try parseIntValue(arguments: arguments, index: &index, flag: arg)

@@ -1,4 +1,6 @@
-# Aptune
+# Introduction
+
+![Aptune Banner](APTUNE_BANNER.svg)
 
 Aptune is a cli tool for MacOS that ducks system volume while you speak.
 
@@ -6,13 +8,13 @@ Aptune is a cli tool for MacOS that ducks system volume while you speak.
 
 ## Features
 
-- On speech onset, volume ramps down to `current * downTo`.
+- On speech onset, volume ramps down to `current * configured ducking multiplier`.
 - After silence hold, volume ramps back to the pre-duck baseline.
 - On exit (`Ctrl+C`), Aptune restores baseline volume.
 
 ## Usage
 
-- `--downTo <0...1>` (default `0.25`)
+- `--down-to <0...1>` (default `0.25`)
 - `--attack-ms <int>` (default `80`)
 - `--release-ms <int>` (default `600`)
 - `--hold-ms <int>` (default `250`)
