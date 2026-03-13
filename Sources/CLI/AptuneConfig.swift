@@ -51,5 +51,5 @@ public enum AptuneVersion {
     public static let previous = "v0.1.0"
     public static let profile = "fr-v0.2"
 
-    public static let summary = "aptune \(current) (profile: \(profile)=firered; previous tag: \(previous))"
+    public static let summary = "aptune \(current)"
 }
