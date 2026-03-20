@@ -3,13 +3,14 @@ class Aptune < Formula
   homepage "https://github.com/yyovil/aptune"
   version "0.2.0"
   url "https://github.com/yyovil/aptune/releases/download/v0.2.0/aptune-0.2.0-aarch64-darwin.tar.gz"
-  sha256 "1662102e2fd3ba9e4a901d8d8a6f1ea6d2424b0d459565d26937ca1f923df735"
+  sha256 "8abc6fe5ee2df7f5c5f3e0d2a0a218ead70ecf28656c06e6827113336a8a4e18"
   depends_on arch: :arm64
   depends_on macos: :ventura
 
   def install
     bin.install "aptune"
     cp_r "Aptune_VAD.bundle", bin/"Aptune_VAD.bundle"
+    zsh_completion.install "share/zsh/site-functions/_aptune"
   end
 
   test do
