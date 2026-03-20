@@ -71,6 +71,23 @@ func main() -> Int32 {
         case .showVersion:
             print(AptuneVersion.summary)
             return 0
+        case .installBuiltInMicPlugin(let command):
+            if command.showHelp {
+                print(CLIParser.installBuiltInMicPluginUsage)
+                return 0
+            }
+            try installBuiltInMicPlugin(appName: command.appName)
+            return 0
+        case .useBuiltInMic(let command):
+            if command.showHelp {
+                print(CLIParser.useBuiltInMicUsage)
+                return 0
+            }
+            if command.listDevices {
+                try printBuiltInMicDeviceList()
+                return 0
+            }
+            try runBuiltInMicCommand(command)
         case .run(let config):
             printBanner()
             let logger = Logger(level: config.logLevel)

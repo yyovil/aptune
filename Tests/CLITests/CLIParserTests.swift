@@ -27,7 +27,7 @@ final class CLIParserTests: XCTestCase {
 
     func testParsesAllFlags() throws {
         let args = [
-            "--downTo", "0.4",
+            "--down-to", "0.4",
             "--attack-ms", "100",
             "--release-ms", "700",
             "--hold-ms", "300",
@@ -49,7 +49,7 @@ final class CLIParserTests: XCTestCase {
     }
 
     func testRejectsOutOfRangeDownTo() {
-        XCTAssertThrowsError(try CLIParser.parse(arguments: ["--downTo", "1.1"]))
+        XCTAssertThrowsError(try CLIParser.parse(arguments: ["--down-to", "1.1"]))
     }
 
     func testRejectsUnknownFlag() {
@@ -70,5 +70,66 @@ final class CLIParserTests: XCTestCase {
         XCTAssertEqual(try CLIParser.parse(arguments: ["--help"]), .showHelp)
         XCTAssertEqual(try CLIParser.parse(arguments: ["-h"]), .showHelp)
         XCTAssertEqual(try CLIParser.parse(arguments: ["help"]), .showHelp)
+    }
+
+    func testParsesBuiltInMicCommand() throws {
+        let command = try CLIParser.parse(arguments: [
+            "use-built-in-mic",
+            "--output", "AirPods Pro",
+            "--replace-running",
+            "--",
+            "--down-to", "0.4"
+        ])
+
+        XCTAssertEqual(
+            command,
+            .useBuiltInMic(
+                BuiltInMicLaunchCommand(
+                    replaceRunningInstance: true,
+                    outputQuery: "AirPods Pro",
+                    aptuneArguments: ["--down-to", "0.4"]
+                )
+            )
+        )
+    }
+
+    func testRejectsLegacyDownToFlag() {
+        XCTAssertThrowsError(try CLIParser.parse(arguments: ["--downTo", "0.4"]))
+    }
+
+    func testParsesBuiltInMicCommandHelp() throws {
+        XCTAssertEqual(
+            try CLIParser.parse(arguments: ["use-built-in-mic", "--help"]),
+            .useBuiltInMic(BuiltInMicLaunchCommand(showHelp: true))
+        )
+    }
+
+    func testParsesBuiltInMicListCommand() throws {
+        XCTAssertEqual(
+            try CLIParser.parse(arguments: ["use-built-in-mic", "--list"]),
+            .useBuiltInMic(BuiltInMicLaunchCommand(listDevices: true))
+        )
+    }
+
+    func testRejectsRemovedBuiltInMicListDevicesFlag() {
+        XCTAssertThrowsError(try CLIParser.parse(arguments: ["use-built-in-mic", "--list-devices"]))
+    }
+
+    func testParsesBuiltInMicPluginInstallCommand() throws {
+        XCTAssertEqual(
+            try CLIParser.parse(arguments: ["install-plugin", "built-in-mic"]),
+            .installBuiltInMicPlugin(InstallBuiltInMicPluginCommand())
+        )
+    }
+
+    func testShowsInstallPluginHelpWithoutPluginName() throws {
+        XCTAssertEqual(
+            try CLIParser.parse(arguments: ["install-plugin", "--help"]),
+            .installBuiltInMicPlugin(InstallBuiltInMicPluginCommand(showHelp: true))
+        )
+    }
+
+    func testRejectsUnknownPluginName() {
+        XCTAssertThrowsError(try CLIParser.parse(arguments: ["install-plugin", "unknown"]))
     }
 }

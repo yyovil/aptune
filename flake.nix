@@ -26,12 +26,30 @@
           aptune = pkgs.stdenv.mkDerivation {
             pname = "aptune";
             inherit version;
-            src = lib.cleanSource ./.;
+            src = lib.cleanSourceWith {
+              src = ./.;
+              filter = path: type:
+                let
+                  name = baseLib.baseNameOf (toString path);
+                in
+                  lib.cleanSourceFilter path type
+                  && !(builtins.elem name [
+                    ".build"
+                    ".build-release"
+                    ".build-tests"
+                    ".cache"
+                    ".content"
+                    ".direnv"
+                    ".swiftpm"
+                    "dist"
+                    "result"
+                  ]);
+            };
 
             strictDeps = true;
             dontConfigure = true;
 
-            nativeBuildInputs = [ swift swiftpm ];
+            nativeBuildInputs = [ swift swiftpm pkgs.zsh ];
 
             buildInputs = [ appleSdk pkgs.libiconv ];
 
@@ -47,9 +65,20 @@
             installPhase = ''
               release_dir="$(cd .build/release && pwd -P)"
 
-              mkdir -p "$out/bin"
+              mkdir -p "$out/bin" "$out/share/zsh/site-functions"
               install -m755 "$release_dir/aptune" "$out/bin/aptune"
               cp -R "$release_dir/Aptune_VAD.bundle" "$out/bin/Aptune_VAD.bundle"
+              install -m644 completions/zsh/_aptune "$out/share/zsh/site-functions/_aptune"
+            '';
+
+            doInstallCheck = true;
+            installCheckPhase = ''
+              export PATH="$out/bin:$PATH"
+              export APTUNE_COMPLETION_FILE="$out/share/zsh/site-functions/_aptune"
+              export APTUNE_COMPLETION_COMMAND_NAME="aptune"
+
+              "$out/bin/aptune" help >/dev/null
+              zsh scripts/test-zsh-completions.zsh
             '';
 
             meta = with lib; {
