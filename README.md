@@ -1,6 +1,8 @@
-# Introduction
+# Aptune
 
-![Aptune Banner](APTUNE_BANNER.svg)
+<p align="center">
+  <img src="APTUNE_BANNER.svg" alt="Aptune banner">
+</p>
 
 Aptune is a cli tool for MacOS that ducks system volume while you speak.
 
@@ -8,7 +10,7 @@ Aptune is a cli tool for MacOS that ducks system volume while you speak.
 
 ## Features
 
-- On speech onset, volume ramps down to `current * configured ducking multiplier`.
+- On speech onset, volume ramps down to `current * configured multiplier`.
 - After silence hold, volume ramps back to the pre-duck baseline.
 - On exit (`Ctrl+C`), Aptune restores baseline volume.
 
@@ -22,6 +24,15 @@ Aptune is a cli tool for MacOS that ducks system volume while you speak.
 - `--speech-threshold <0...1>` (default `0.7`)
 - `-h`, `--help`, `help`
 - `-v`, `--version`, `version`
+
+### Commands
+
+- `aptune use-built-in-mic`  
+  Temporarily keep the built-in microphone active while sending output to another device.
+- `aptune install-plugin built-in-mic`  
+  Install the optional built-in microphone Spotlight shortcut.
+
+Optional macOS audio routing helper and Spotlight launcher: if you want Aptune to keep using your Mac's built-in microphone while playback stays on AirPods or another Bluetooth device, see [docs/audio-routing-helper.md](docs/audio-routing-helper.md).
 
 ## Install
 
@@ -46,4 +57,23 @@ Install Aptune from the tap:
 ```bash
 brew tap yyovil/aptune https://github.com/yyovil/aptune
 brew install aptune
+```
+
+If you want Aptune to keep using your Mac's built-in microphone while your audio output stays on AirPods or another Bluetooth device, see [docs/audio-routing-helper.md](docs/audio-routing-helper.md).
+
+## Shell Completion
+
+Aptune currently ships `zsh` completions.
+
+If you install Aptune with the Nix flake or the Homebrew tap above, the completion file is installed automatically. Start a new `zsh` session or run:
+
+```bash
+exec zsh
+```
+
+If you install Aptune from a release tarball, copy `share/zsh/site-functions/_aptune` into a directory on your `fpath`, then reload completions:
+
+```bash
+autoload -Uz compinit
+compinit -i
 ```
