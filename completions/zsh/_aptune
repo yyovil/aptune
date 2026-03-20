@@ -1,0 +1,351 @@
+#compdef aptune
+
+_aptune_top_level_words() {
+    local -a entries=(
+        'help:Show this help text'
+        'version:Show CLI version'
+        'use-built-in-mic:Use the built-in microphone and launch aptune'
+        'install-plugin:Install an Aptune plugin'
+        '--down-to:Target volume multiplier while speaking'
+        '--attack-ms:Duck ramp duration in milliseconds'
+        '--release-ms:Restore ramp duration in milliseconds'
+        '--hold-ms:Silence hold before restore in milliseconds'
+        '--log-level:Log verbosity'
+        '--speech-threshold:Speech confidence threshold'
+        '-h:Show this help'
+        '--help:Show this help'
+        '-v:Show CLI version'
+        '--version:Show CLI version'
+    )
+
+    _describe -t top_level_words 'aptune action or option' entries
+}
+
+_aptune_main_command_words() {
+    local -a commands=(
+        'help:Show this help text'
+        'version:Show CLI version'
+        'use-built-in-mic:Use the built-in microphone and launch aptune'
+        'install-plugin:Install an Aptune plugin'
+    )
+
+    _describe -t commands 'aptune action' commands
+}
+
+_aptune_install_plugin_words() {
+    local -a entries=(
+        'built-in-mic:Install the Spotlight launcher app'
+        '-h:Show this help'
+        '--help:Show this help'
+    )
+
+    _describe -t install_plugin_words 'install-plugin target or option' entries
+}
+
+_aptune_install_plugin_targets() {
+    local -a targets=(
+        'built-in-mic:Install the Spotlight launcher app'
+    )
+
+    _describe -t install_plugin_targets 'plugin target' targets
+}
+
+_aptune_log_levels() {
+    local -a levels=(
+        'info:Default operational logging'
+        'debug:Verbose diagnostic logging'
+    )
+
+    _describe -t log_levels 'log level' levels
+}
+
+_aptune_down_to_values() {
+    local -a values=(
+        '0.10:Aggressive ducking'
+        '0.25:Default ducking level'
+        '0.50:Balanced ducking'
+        '0.75:Subtle ducking'
+        '1.00:Leave volume unchanged'
+    )
+
+    _describe -t down_to_values 'volume multiplier' values || _message 'number between 0 and 1'
+}
+
+_aptune_attack_values() {
+    local -a values=(
+        '0:No ducking ramp'
+        '40:Faster ducking'
+        '80:Default ducking ramp'
+        '120:Smoother ducking'
+        '250:Noticeable fade'
+    )
+
+    _describe -t attack_values 'attack duration in milliseconds' values || _message 'non-negative integer'
+}
+
+_aptune_release_values() {
+    local -a values=(
+        '250:Fast restore'
+        '600:Default restore ramp'
+        '900:Gentler restore ramp'
+        '1200:Slow restore ramp'
+    )
+
+    _describe -t release_values 'release duration in milliseconds' values || _message 'non-negative integer'
+}
+
+_aptune_hold_values() {
+    local -a values=(
+        '0:Restore immediately after speech stops'
+        '150:Quick restore hold'
+        '250:Default restore hold'
+        '400:Longer restore hold'
+    )
+
+    _describe -t hold_values 'hold duration in milliseconds' values || _message 'non-negative integer'
+}
+
+_aptune_threshold_values() {
+    local -a values=(
+        '0.50:More sensitive speech detection'
+        '0.70:Default speech threshold'
+        '0.85:More conservative speech detection'
+        '0.95:Very conservative speech detection'
+    )
+
+    _describe -t threshold_values 'speech confidence threshold' values || _message 'number between 0 and 1'
+}
+
+_aptune_device_name() {
+    _message 'device name'
+}
+
+_aptune_plugin_app_name() {
+    _message 'app name'
+}
+
+_aptune_has_terminal_mode() {
+    local index
+
+    for (( index = 2; index < CURRENT; index += 1 )); do
+        case ${words[index]} in
+            -h|--help|help|-v|--version|version)
+                return 0
+                ;;
+        esac
+    done
+
+    return 1
+}
+
+_aptune_find_separator() {
+    local index
+
+    for (( index = 2; index <= $#words; index += 1 )); do
+        if [[ ${words[index]} == '--' ]]; then
+            print -r -- "$index"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+_aptune_complete_main_options_only() {
+    local context state line
+    typeset -A opt_args
+
+    if _aptune_has_terminal_mode; then
+        return 0
+    fi
+
+    _arguments -C \
+        '(-h --help)-h[Show this help]' \
+        '(-h --help)--help[Show this help]' \
+        '(-v --version)-v[Show CLI version]' \
+        '(-v --version)--version[Show CLI version]' \
+        '(--down-to)--down-to[Target volume multiplier while speaking]:volume multiplier:_aptune_down_to_values' \
+        '(--attack-ms)--attack-ms[Duck ramp duration in milliseconds]:milliseconds:_aptune_attack_values' \
+        '(--release-ms)--release-ms[Restore ramp duration in milliseconds]:milliseconds:_aptune_release_values' \
+        '(--hold-ms)--hold-ms[Silence hold before restore in milliseconds]:milliseconds:_aptune_hold_values' \
+        '(--log-level)--log-level[Log verbosity]:log level:_aptune_log_levels' \
+        '(--speech-threshold)--speech-threshold[Speech confidence threshold]:speech threshold:_aptune_threshold_values' \
+        '1:action:(help version)' \
+        '*::argument:->extra'
+
+    case $state in
+        extra)
+            if _aptune_has_terminal_mode; then
+                return 0
+            fi
+
+            _message 'no more arguments'
+            ;;
+    esac
+}
+
+_aptune_complete_run() {
+    local context state line
+    typeset -A opt_args
+
+    if _aptune_has_terminal_mode; then
+        return 0
+    fi
+
+    if (( CURRENT == 2 )) && [[ -z ${words[CURRENT]} ]]; then
+        _aptune_top_level_words
+        return
+    fi
+
+    _arguments -C \
+        '(-h --help)-h[Show this help]' \
+        '(-h --help)--help[Show this help]' \
+        '(-v --version)-v[Show CLI version]' \
+        '(-v --version)--version[Show CLI version]' \
+        '(--down-to)--down-to[Target volume multiplier while speaking]:volume multiplier:_aptune_down_to_values' \
+        '(--attack-ms)--attack-ms[Duck ramp duration in milliseconds]:milliseconds:_aptune_attack_values' \
+        '(--release-ms)--release-ms[Restore ramp duration in milliseconds]:milliseconds:_aptune_release_values' \
+        '(--hold-ms)--hold-ms[Silence hold before restore in milliseconds]:milliseconds:_aptune_hold_values' \
+        '(--log-level)--log-level[Log verbosity]:log level:_aptune_log_levels' \
+        '(--speech-threshold)--speech-threshold[Speech confidence threshold]:speech threshold:_aptune_threshold_values' \
+        '1:action:_aptune_main_command_words' \
+        '*::argument:->extra'
+
+    case $state in
+        extra)
+            if _aptune_has_terminal_mode; then
+                return 0
+            fi
+
+            _message 'no more arguments'
+            ;;
+    esac
+}
+
+_aptune_complete_use_built_in_mic() {
+    local -a subcommand_words
+    local index
+
+    subcommand_words=("${words[1]}")
+    for (( index = 3; index <= $#words; index += 1 )); do
+        subcommand_words+=("${words[index]}")
+    done
+
+    local -a words
+    local CURRENT=$(( CURRENT - 1 ))
+    words=("${subcommand_words[@]}")
+
+    local separator_index
+    separator_index=$(_aptune_find_separator || true)
+    if [[ -n ${separator_index:-} ]] && (( CURRENT > separator_index )); then
+        local -a passthrough_words
+
+        passthrough_words=("${words[1]}")
+        for (( index = separator_index + 1; index <= $#words; index += 1 )); do
+            passthrough_words+=("${words[index]}")
+        done
+
+        words=("${passthrough_words[@]}")
+        CURRENT=$(( CURRENT - separator_index + 1 ))
+
+        _aptune_complete_main_options_only
+        return
+    fi
+
+    local context state line
+    typeset -A opt_args
+
+    if _aptune_has_terminal_mode; then
+        return 0
+    fi
+
+    _arguments -C \
+        '(-h --help)-h[Show this help]' \
+        '(-h --help)--help[Show this help]' \
+        '(--list)--list[List current input and output devices]' \
+        '(--input)--input[Use a specific input device instead of auto-detecting built-in mic]:device name:_aptune_device_name' \
+        '(--output)--output[Switch output to a specific device before launching aptune]:device name:_aptune_device_name' \
+        '(--only-route)--only-route[Switch devices without launching aptune]' \
+        '(--replace-running)--replace-running[Stop an existing Aptune instance before relaunching]' \
+        '--[Pass remaining flags to aptune]' \
+        '*::argument:->extra'
+
+    case $state in
+        extra)
+            if _aptune_has_terminal_mode; then
+                return 0
+            fi
+
+            _message 'no more arguments'
+            ;;
+    esac
+}
+
+_aptune_complete_install_plugin() {
+    local -a subcommand_words
+    local -a option_entries=(
+        '--app-name:Customize the Spotlight app name'
+        '-h:Show this help'
+        '--help:Show this help'
+    )
+    local index
+
+    subcommand_words=("${words[1]}")
+    for (( index = 3; index <= $#words; index += 1 )); do
+        subcommand_words+=("${words[index]}")
+    done
+
+    local -a words
+    local CURRENT=$(( CURRENT - 1 ))
+    words=("${subcommand_words[@]}")
+
+    local context state line
+    typeset -A opt_args
+
+    if _aptune_has_terminal_mode; then
+        return 0
+    fi
+
+    if (( CURRENT == 2 )) && [[ -z ${words[CURRENT]} ]]; then
+        _aptune_install_plugin_words
+        return
+    fi
+
+    if (( CURRENT == 2 )); then
+        _aptune_install_plugin_words
+        return
+    fi
+
+    if [[ ${words[2]} != 'built-in-mic' ]]; then
+        _aptune_install_plugin_targets
+        return
+    fi
+
+    if (( CURRENT > 2 )) && [[ ${words[CURRENT - 1]} == '--app-name' ]]; then
+        _aptune_plugin_app_name
+        return
+    fi
+
+    if [[ -z ${words[CURRENT]} || ${words[CURRENT]} == -* ]]; then
+        _describe -t install_plugin_options 'install-plugin option' option_entries
+        return
+    fi
+
+    _message 'no more arguments'
+}
+
+_aptune() {
+    setopt localoptions no_aliases
+
+    case ${words[2]-} in
+        use-built-in-mic)
+            _aptune_complete_use_built_in_mic
+            ;;
+        install-plugin)
+            _aptune_complete_install_plugin
+            ;;
+        *)
+            _aptune_complete_run
+            ;;
+    esac
+}

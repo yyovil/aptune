@@ -22,7 +22,7 @@ public struct AptuneConfig: Equatable {
         speechThreshold: Double = 0.7
     ) throws {
         guard (0...1).contains(downTo) else {
-            throw CLIError.invalidValue(flag: "--downTo", message: "must be between 0 and 1")
+            throw CLIError.invalidValue(flag: "--down-to", message: "must be between 0 and 1")
         }
         guard (0...1).contains(speechThreshold) else {
             throw CLIError.invalidValue(flag: "--speech-threshold", message: "must be between 0 and 1")
