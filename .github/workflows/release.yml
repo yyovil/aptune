@@ -1,0 +1,139 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing git tag to release, for example v0.2.0"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            system: aarch64-darwin
+          - runner: macos-15-intel
+            system: x86_64-darwin
+    runs-on: ${{ matrix.runner }}
+    env:
+      TAG_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG_NAME }}
+          fetch-depth: 0
+          path: src
+
+      - name: Verify tag matches CLI version
+        working-directory: src
+        shell: bash
+        run: ./scripts/verify-release-tag.sh "${TAG_NAME}"
+
+      - name: Run tests
+        working-directory: src
+        shell: bash
+        run: ./scripts/test.sh
+
+      - name: Build release artifact
+        id: artifact
+        working-directory: src
+        shell: bash
+        run: ./scripts/create-release-artifact.sh "${TAG_NAME#v}" "${{ matrix.system }}"
+
+      - name: Write release manifest
+        working-directory: src
+        shell: bash
+        run: ./scripts/write-release-manifest.sh "${TAG_NAME#v}" "${{ matrix.system }}" "${{ steps.artifact.outputs.artifact_path }}" "${{ steps.artifact.outputs.sha256 }}" "dist/release-manifest-${{ matrix.system }}.env"
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.system }}
+          path: |
+            src/${{ steps.artifact.outputs.artifact_path }}
+            src/dist/release-manifest-${{ matrix.system }}.env
+
+  publish:
+    needs: build
+    runs-on: macos-15
+    env:
+      TAG_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+      DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG_NAME }}
+          fetch-depth: 0
+          path: src
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          merge-multiple: true
+          path: src/dist/release-assets
+
+      - name: Collect release artifacts
+        id: collect
+        working-directory: src
+        shell: bash
+        run: ./scripts/collect-release-artifacts.sh "dist/release-assets"
+
+      - name: Render Homebrew formula
+        working-directory: src
+        env:
+          APTUNE_GITHUB_REPO: ${{ github.repository }}
+        shell: bash
+        run: ./scripts/update-homebrew-formula.sh "${TAG_NAME#v}" "${{ steps.collect.outputs.arm64_sha256 }}" "${{ steps.collect.outputs.x86_64_sha256 }}" "Formula/aptune.rb" "dist/aptune.rb"
+
+      - name: Write release notes
+        working-directory: src
+        env:
+          APTUNE_GITHUB_REPO: ${{ github.repository }}
+        shell: bash
+        run: ./scripts/write-release-notes.sh "${TAG_NAME}" "${{ steps.collect.outputs.arm64_sha256 }}" "${{ steps.collect.outputs.x86_64_sha256 }}" "dist/release-notes.md"
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: ${{ env.TAG_NAME }}
+          files: |
+            src/${{ steps.collect.outputs.arm64_artifact_path }}
+            src/${{ steps.collect.outputs.x86_64_artifact_path }}
+            src/dist/aptune.rb
+          body_path: src/dist/release-notes.md
+
+      - name: Update workflow summary
+        working-directory: src
+        shell: bash
+        run: ./scripts/write-release-summary.sh "${TAG_NAME}" "${{ steps.collect.outputs.arm64_artifact_name }}" "${{ steps.collect.outputs.arm64_sha256 }}" "${{ steps.collect.outputs.x86_64_artifact_name }}" "${{ steps.collect.outputs.x86_64_sha256 }}"
+
+      - name: Checkout default branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DEFAULT_BRANCH }}
+          fetch-depth: 0
+          path: tap
+
+      - name: Sync Homebrew formula to default branch
+        shell: bash
+        run: ./src/scripts/sync-homebrew-formula.sh "src" "tap" "${TAG_NAME}" "${DEFAULT_BRANCH}"

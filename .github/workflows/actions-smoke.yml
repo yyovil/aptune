@@ -1,0 +1,24 @@
+name: Actions Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing git tag to validate, for example v0.2.0"
+        required: true
+        type: string
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      TAG_NAME: ${{ inputs.tag }}
+      APTUNE_GITHUB_REPO: ${{ github.repository }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Smoke test GitHub Actions scripts
+        shell: bash
+        run: ./scripts/test-actions-smoke.sh "${TAG_NAME}"
