@@ -1,5 +1,9 @@
 # Aptune
 
+<p align="center">
+  <img src="APTUNE_BANNER.svg" alt="Aptune banner">
+</p>
+
 Aptune is a cli tool for MacOS that ducks system volume while you speak.
 
 [![Watch the demo](https://img.youtube.com/vi/bI2UbxcefwM/maxresdefault.jpg)](https://youtu.be/bI2UbxcefwM)
@@ -20,6 +24,13 @@ Aptune is a cli tool for MacOS that ducks system volume while you speak.
 - `--speech-threshold <0...1>` (default `0.7`)
 - `-h`, `--help`, `help`
 - `-v`, `--version`, `version`
+
+### Commands
+
+- `aptune use-built-in-mic`  
+  Temporarily keep the built-in microphone active while sending output to another device.
+- `aptune install-plugin built-in-mic`  
+  Install the optional built-in microphone Spotlight shortcut.
 
 Optional macOS audio routing helper and Spotlight launcher: if you want Aptune to keep using your Mac's built-in microphone while playback stays on AirPods or another Bluetooth device, see [docs/audio-routing-helper.md](docs/audio-routing-helper.md).
 
@@ -53,8 +64,6 @@ Optional Spotlight launcher:
 ```bash
 aptune install-plugin built-in-mic
 ```
-
-If you want Aptune to keep using your Mac's built-in microphone while your audio output stays on AirPods or another Bluetooth device, see [docs/audio-routing-helper.md](docs/audio-routing-helper.md).
 
 ## Shell Completion
 
