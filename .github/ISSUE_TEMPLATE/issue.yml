@@ -1,0 +1,68 @@
+name: Aptune issue
+description: Report a bug or request an improvement with enough detail to act on it.
+title: "[Issue]: "
+labels:
+  - triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Human pull requests are not welcomed for this repository.
+        Open issues only, and include a concrete prompt that could help resolve the problem.
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+      placeholder: Aptune should lower the system volume when speech starts.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead?
+      placeholder: Aptune never lowered the volume, or restored the wrong volume.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Provide the shortest sequence that reproduces the issue.
+      placeholder: |
+        1. Run `aptune`
+        2. Start playing music
+        3. Start speaking
+        4. Observe that volume does not change
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include macOS version, hardware, install method, and command used.
+      placeholder: |
+        macOS 14.7
+        MacBook Pro M3
+        Installed via Homebrew
+        Command: aptune --downTo 0.25
+    validations:
+      required: true
+  - type: textarea
+    id: prompt
+    attributes:
+      label: Suggested prompt
+      description: Provide the prompt you think would best help resolve this issue.
+      placeholder: Investigate why Aptune fails to duck volume on macOS 14.7 when installed via Homebrew and restore the expected speech-triggered behavior.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I understand human pull requests are not welcomed here.
+          required: true
+        - label: I used the issue form instead of a blank issue.
+          required: true

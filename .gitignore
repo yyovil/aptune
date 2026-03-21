@@ -10,3 +10,4 @@ dist/
 .vscode/
 .content
 .DS_Store
+.actrc

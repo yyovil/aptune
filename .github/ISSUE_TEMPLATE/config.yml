@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Contribution policy
+    url: https://github.com/yyovil/aptune
+    about: Human pull requests are not welcomed here. Open a structured issue instead.
